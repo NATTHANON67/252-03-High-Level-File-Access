@@ -112,57 +112,43 @@ int build_report(const struct order_record records[], size_t count,
 
 	offset = 0;
 
-	/*
-	 * Header
-	 */
 	written = snprintf(out + offset,
 			   out_size - offset,
-			   "%-*s  %5s  %10s  %-*s  %5s\n",
-			   (int)stats->longest_name,
-			   "Name",
-			   "Qty",
-			   "Unit Price",
-			   LAB_MAX_CATEGORY_LEN - 1,
-			   "Category",
-			   "Total");
+			   "report | rows=%zu | longest=%zu\n",
+			   count,
+			   stats->longest_name);
 
 	if (written < 0 || (size_t)written >= out_size - offset) {
 		return -1;
 	}
 	offset += (size_t)written;
 
-	/*
-	 * Rows
-	 */
 	for (i = 0; i < count; i++) {
 		written = snprintf(out + offset,
 				   out_size - offset,
-				   "%-*s  %5d  %10d  %-*s  %5d\n",
+				   "%02zu | %-*s | qty=%2d | unit=%3d | total=%3d | cat=%s\n",
+				   i + 1,
 				   (int)stats->longest_name,
 				   records[i].name,
 				   records[i].quantity,
 				   records[i].unit_price,
-				   LAB_MAX_CATEGORY_LEN - 1,
-				   records[i].category,
-				   records[i].total_price);
+				   records[i].total_price,
+				   records[i].category);
 
 		if (written < 0 || (size_t)written >= out_size - offset) {
 			return -1;
 		}
+
 		offset += (size_t)written;
 	}
 
-	/*
-	 * Summary
-	 */
 	written = snprintf(out + offset,
 			   out_size - offset,
-			   "Grand total: %d\n"
-			   "Max total: %d\n"
-			   "Longest name: %zu\n",
+			   "summary | grand_total=%d | max_total=%d | reads=%zu | writes=%zu\n",
 			   stats->grand_total,
 			   stats->max_total,
-			   stats->longest_name);
+			   stats->input_reads,
+			   stats->output_writes);
 
 	if (written < 0 || (size_t)written >= out_size - offset) {
 		return -1;
